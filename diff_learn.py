@@ -28,17 +28,17 @@ p1 = np.random.randn(1, 10)
 p2 = np.random.randn(1, 20)
 
 # Lotka-Volterra model parameters
-alpha, beta, gamma, delta = 0.2, 0.1, 0.3, 0.6
+alpha, beta, gamma, delta = 1.0, 0.01, .1, 0.3
 
 # Initial state vector X
-X = np.array([[10, 5]])  # Example initial populations
+X = np.array([[1000, 20]])  # Example initial populations
 
 # Forward pass of the neural network
 def forward_pass(X):
     global w1, w2, w3, b1, b2, b3
-    z1 = relu(np.dot(X, w1) + b1)
-    z2 = relu(np.dot(z1, w2) + b2)
-    z3 = relu(np.dot(z2, w3) + b3)
+    z1 = tanh(np.dot(X, w1) + b1)
+    z2 = tanh(np.dot(z1, w2) + b2)
+    z3 = np.dot(z2, w3) + b3
     return z1, z2, z3
 
 
@@ -74,19 +74,19 @@ def update_predicted_outputs(p, z, eta):
 def backpropagate(X, y_true, z1, z2, z3, eta):
     global w1, w2, w3, b1, b2, b3, p1, p2
     # Compute the gradient of the loss w.r.t. the final output
-    grad_loss_z3 = 2 * (z3 - y_true) * drelu(z3)
+    grad_loss_z3 = 2 * (z3 - y_true)
 
     # Backpropagate this gradient to get gradients for w3 and b3 using predicted outputs (p2)
     grad_w3 = np.dot(p2.T, grad_loss_z3)
     grad_b3 = np.sum(grad_loss_z3, axis=0, keepdims=True)
     
     # Backpropagate through the second hidden layer using the predicted output p2
-    grad_loss_p2 = np.dot(grad_loss_z3, w3.T) * drelu(p2)
+    grad_loss_p2 = np.dot(grad_loss_z3, w3.T) * dtanh(p2)
     grad_w2 = np.dot(p1.T, grad_loss_p2)
     grad_b2 = np.sum(grad_loss_p2, axis=0, keepdims=True)
     
     # Backpropagate through the first hidden layer using the predicted output p1
-    grad_loss_p1 = np.dot(grad_loss_p2, w2.T) * drelu(p1)
+    grad_loss_p1 = np.dot(grad_loss_p2, w2.T) * dtanh(p1)
     grad_w1 = np.dot(X.T, grad_loss_p1)
     grad_b1 = np.sum(grad_loss_p1, axis=0, keepdims=True)
 
@@ -104,7 +104,7 @@ def mse_loss(y_pred, y_true):
     return np.mean((y_pred - y_true) ** 2)
 
 # Training loop parameters
-epochs = 100000
+epochs = 10000
 dt = 0.01
 learn_rate = 0.01
 hidden_layer_learn = .002
@@ -116,6 +116,8 @@ losses = []  # To store loss at each epoch
 for epoch in range(epochs):
     X_next = solve_ivp_step(X, dt, alpha, beta, gamma, delta)
     z1, z2, z3 = forward_pass(X)
+    print(z3)
+    print("predicted " + str(X_next))
     p1 = update_predicted_outputs(p1, z1, hidden_layer_learn)
     p2 = update_predicted_outputs(p2, z2, hidden_layer_learn)
     # Backpropagation to update weights using predicted outputs
