@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.integrate import solve_ivp
+from scipy.integrate import solve_ivp,odeint
 
 # Define the activation function and its derivative
 def tanh(x):
@@ -13,6 +13,11 @@ def relu(x):
     return np.maximum(0, x)
 def drelu(x):
     return np.where(x > 0, 1, 0)
+
+def sigmoid(x):
+    return 1/(1+np.exp(-x))
+def dsigmoid(x):
+    return sigmoid(x)*(1-sigmoid(x))
 
 # Initialize the weights for a 3-layer neural network
 np.random.seed(42)  # For reproducibility
@@ -28,10 +33,10 @@ p1 = np.random.randn(1, 10)
 p2 = np.random.randn(1, 20)
 
 # Lotka-Volterra model parameters
-alpha, beta, gamma, delta = 1.0, 0.01, .1, 0.3
+alpha, beta, gamma, delta = 1.8, 0.001, .1, .0005
 
 # Initial state vector X
-X = np.array([[1000, 20]])  # Example initial populations
+initial_conditions = np.array([[500, 10]])  # Example initial populations
 
 # Forward pass of the neural network
 def forward_pass(X):
@@ -49,11 +54,11 @@ def lotka_volterra_ivp(t, X, alpha, beta, gamma, delta):
     dydt = delta * x * y - gamma * y
     return [dxdt, dydt]
 
-# Use solve_ivp to solve the Lotka-Volterra model over one time step
-def solve_ivp_step(X, dt, alpha, beta, gamma, delta):
-    sol = solve_ivp(lotka_volterra_ivp, [0, dt], X.flatten(), args=(alpha, beta, gamma, delta),method='BDF')
-    X_next = sol.y[:, -1].reshape(1, -1)  # Only take the last point
-    return X_next
+
+def solve_odeint_step(X, dt, alpha, beta, gamma, delta, n_steps):
+    #sol = odeint(lotka_volterra_odeint, X.flatten(), t_span, args=(alpha, beta, gamma, delta),rtol=1e-12, atol=1e-12)
+    sol = solve_ivp(lotka_volterra_ivp, [0, dt], X.flatten(), args=(alpha, beta, gamma, delta),method='RK45',rtol=1e-13,atol=1e-13)
+    return sol.y
 
 
 
@@ -73,8 +78,9 @@ def update_predicted_outputs(p, z, eta):
 
 def backpropagate(X, y_true, z1, z2, z3, eta):
     global w1, w2, w3, b1, b2, b3, p1, p2
+
     # Compute the gradient of the loss w.r.t. the final output
-    grad_loss_z3 = 2 * (z3 - y_true)
+    grad_loss_z3 = (2 * (z3 - y_true) /2)
 
     # Backpropagate this gradient to get gradients for w3 and b3 using predicted outputs (p2)
     grad_w3 = np.dot(p2.T, grad_loss_z3)
@@ -104,36 +110,51 @@ def mse_loss(y_pred, y_true):
     return np.mean((y_pred - y_true) ** 2)
 
 # Training loop parameters
-epochs = 10000
-dt = 0.01
+epochs = 50
+dt = 1000.0
 learn_rate = 0.01
-hidden_layer_learn = .002
+hidden_layer_learn = .02
 
 
 # Training loop with loss computation
 losses = []  # To store loss at each epoch
 
+#Generate training data
+data = solve_odeint_step(initial_conditions, dt, alpha, beta, gamma, delta, 1000)
+train_data = data[:,:-1]
+labels = data[:,1:]
+
+print(labels.shape)
+
+#Plot training data
+plt.figure(figsize=(10, 5))
+plt.plot(train_data[0,:], label='Prey')
+plt.plot(train_data[1,:], label='Predator')
+plt.xlabel('Time')
+plt.ylabel('Population')
+plt.title('Training Data')
+plt.legend()
+plt.show()
+
 for epoch in range(epochs):
-    X_next = solve_ivp_step(X, dt, alpha, beta, gamma, delta)
-    z1, z2, z3 = forward_pass(X)
-    print(z3)
-    print("predicted " + str(X_next))
-    p1 = update_predicted_outputs(p1, z1, hidden_layer_learn)
-    p2 = update_predicted_outputs(p2, z2, hidden_layer_learn)
-    # Backpropagation to update weights using predicted outputs
-    backpropagate(X, X_next, z1, z2, z3, learn_rate)
-    
-    # Compute and store the loss
-    loss = mse_loss(z3, X_next)
-    losses.append(loss)
+    for x,y in zip(train_data.T,labels.T):
+        x = x.reshape(1, 2)
+        y = y.reshape(1, 2)
+        z1, z2, z3 = forward_pass(x)
+        p1 = update_predicted_outputs(p1, z1, hidden_layer_learn)
+        p2 = update_predicted_outputs(p2, z2, hidden_layer_learn)
+        # Backpropagation to update weights using predicted outputs
+        backpropagate(x, y, z1, z2, z3, learn_rate)
+        
+        # Compute and store the loss
+        loss = mse_loss(z3, y)
+        losses.append(loss)
 
-    X = X_next
-
-        #Print loss for this epoch
-    #print("Epoch: " + str(epoch) + " Loss: " + str(loss))
+            #Print loss for this epoch
+        #print("Epoch: " + str(epoch) + " Loss: " + str(loss))
 
 #print(p1)
-print("Final Loss: " + losses[-1].astype(str))
+print("Lowest Loss: " + np.array(losses).min().astype(str))
 # Plot the loss over epochs
 plt.figure(figsize=(10, 5))
 plt.plot(losses, label='MSE Loss')
@@ -142,3 +163,6 @@ plt.ylabel('Loss')
 plt.title('MSE Loss Over Epochs')
 plt.legend()
 plt.show()
+
+
+
