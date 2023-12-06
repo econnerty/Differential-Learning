@@ -142,7 +142,7 @@ plt.xlabel('Time')
 plt.ylabel('Population')
 plt.title('Training Data')
 plt.legend()
-plt.savefig('training_data.png')
+plt.savefig('training_data.pdf')
 
 # Training loop with separate updates for predicted layers and weights
 for epoch in range(epochs):
@@ -181,7 +181,7 @@ plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.title('MSE Loss Over Epochs')
 plt.legend()
-plt.show()
+plt.savefig('loss.pdf')
 
 # Plot the neural networks predictions
 predictions = []
@@ -199,7 +199,7 @@ plt.xlabel('Time')
 plt.ylabel('Population')
 plt.title('Predictions')
 plt.legend()
-plt.show()
+plt.savefig('predictions.pdf')
 
 
 
