@@ -36,7 +36,7 @@ p2 = np.random.randn(1, 20)
 alpha, beta, gamma, delta = 1.8, 0.001, .1, .0005
 
 # Initial state vector X
-initial_conditions = np.array([[500, 10]])  # Example initial populations
+initial_conditions = np.array([[50, 5]])  # Example initial populations
 
 # Forward pass of the neural network
 def forward_pass(X):
@@ -81,21 +81,21 @@ def backpropagate(X, y_true, z1, z2, z3, eta):
 
     # Update rules for the output layer (traditional approach)
     loss_output = z3 - y_true
-    grad_w3 = np.dot(z2.T, loss_output)
+    grad_w3 = np.dot(p2.T, loss_output)
     grad_b3 = np.sum(loss_output, axis=0, keepdims=True)
     w3 -= eta * grad_w3
     b3 -= eta * grad_b3
 
     # Update rules for the second hidden layer
     loss_hidden_2 = z2 - p2
-    grad_w2 = np.dot(z1.T, loss_hidden_2)
+    grad_w2 = np.dot(p1.T, loss_hidden_2) * dtanh(z2)
     grad_b2 = np.sum(loss_hidden_2, axis=0, keepdims=True)
     w2 -= eta * grad_w2
     b2 -= eta * grad_b2
 
     # Update rules for the first hidden layer
     loss_hidden_1 = z1 - p1
-    grad_w1 = np.dot(X.T, loss_hidden_1)
+    grad_w1 = np.dot(X.T, loss_hidden_1) * dtanh(z1)
     grad_b1 = np.sum(loss_hidden_1, axis=0, keepdims=True)
     w1 -= eta * grad_w1
     b1 -= eta * grad_b1
@@ -107,10 +107,10 @@ def mse_loss(y_pred, y_true):
     return np.mean((y_pred - y_true) ** 2)
 
 # Training loop parameters
-epochs = 50
+epochs = 1000
 dt = 1000.0
-learn_rate = 0.01
-hidden_layer_learn = .02
+learn_rate = 0.001
+hidden_layer_learn = .09
 
 
 # Training loop with loss computation
@@ -131,7 +131,7 @@ plt.xlabel('Time')
 plt.ylabel('Population')
 plt.title('Training Data')
 plt.legend()
-plt.show()
+plt.savefig('training_data.png')
 
 # Training loop with separate updates for predicted layers and weights
 for epoch in range(epochs):
@@ -169,6 +169,24 @@ plt.plot(losses, label='MSE Loss')
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.title('MSE Loss Over Epochs')
+plt.legend()
+plt.show()
+
+# Plot the neural networks predictions
+predictions = []
+for x, y in zip(train_data.T, labels.T):
+    x = x.reshape(1, 2)
+    y = y.reshape(1, 2)
+    z1, z2, z3 = forward_pass(x)
+    predictions.append(z3)
+
+#Plot the predictions
+plt.figure(figsize=(10, 5))
+plt.plot(np.array(predictions)[:,:,0], label='Prey')
+plt.plot(np.array(predictions)[:,:,1], label='Predator')
+plt.xlabel('Time')
+plt.ylabel('Population')
+plt.title('Predictions')
 plt.legend()
 plt.show()
 
