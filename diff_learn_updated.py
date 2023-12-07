@@ -118,9 +118,9 @@ def mse_loss(y_pred, y_true):
     return np.mean((y_pred - y_true) ** 2)
 
 # Training loop parameters
-epochs = 10
-dt = 5.0
-learn_rate = 0.0001
+epochs = 13
+dt = 20.0
+learn_rate = 0.00001
 hidden_layer_learn = .001
 
 
@@ -168,7 +168,7 @@ for epoch in range(epochs):
         losses.append(loss)
 
     # Optionally, print loss for the epoch
-    print(f"Epoch: {epoch}, Loss: {np.mean(losses[-len(train_data.T):])}")
+    print(f"Epoch: {epoch+1}, Loss: {np.mean(losses[-len(train_data.T):])}")
 
 # Plotting code remains unchanged
 
