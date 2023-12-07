@@ -36,7 +36,7 @@ p2 = np.random.randn(1, 20)
 alpha, beta, gamma, delta = 1.8, 0.001, .1, .0005
 
 # Initial state vector X
-initial_conditions = np.array([[50, 5]])  # Example initial populations
+initial_conditions = np.array([[500, 5]])  # Example initial populations
 
 # Forward pass of the neural network
 def forward_pass(X):
@@ -118,10 +118,10 @@ def mse_loss(y_pred, y_true):
     return np.mean((y_pred - y_true) ** 2)
 
 # Training loop parameters
-epochs = 13
+epochs = 26
 dt = 20.0
-learn_rate = 0.00001
-hidden_layer_learn = .001
+learn_rate = 5e-6
+hidden_layer_learn = .0001
 
 
 # Training loop with loss computation
@@ -174,7 +174,7 @@ for epoch in range(epochs):
 
 
 #print(p1)
-print("Lowest Loss: " + np.array(losses).min().astype(str))
+#print("Lowest Loss: " + np.array(losses).min().astype(str))
 # Plot the loss over epochs
 plt.figure(figsize=(10, 5))
 plt.plot(losses, label='MSE Loss')
