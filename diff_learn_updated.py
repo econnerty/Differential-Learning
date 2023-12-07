@@ -119,8 +119,8 @@ def mse_loss(y_pred, y_true):
 
 # Training loop parameters
 epochs = 10
-dt = 1000.0
-learn_rate = 0.001
+dt = 5.0
+learn_rate = 0.0001
 hidden_layer_learn = .001
 
 
@@ -146,16 +146,17 @@ plt.savefig('training_data.pdf')
 
 # Training loop with separate updates for predicted layers and weights
 for epoch in range(epochs):
-    # First loop to update the predicted outputs
-    for x, y in zip(train_data.T, labels.T):
-        x = x.reshape(1, 2)
-        z1, z2, z3 = forward_pass(x)
-        # Update predicted outputs for hidden layers
-        p1 = update_predicted_outputs(p1, z1, hidden_layer_learn)
-        p2 = update_predicted_outputs(p2, z2, hidden_layer_learn)
-
     # Second loop to update the weights
     for x, y in zip(train_data.T, labels.T):
+    # First loop to update the predicted outputs
+        for x, y in zip(train_data.T, labels.T):
+            x = x.reshape(1, 2)
+            z1, z2, z3 = forward_pass(x)
+            # Update predicted outputs for hidden layers
+            p1 = update_predicted_outputs(p1, z1, hidden_layer_learn)
+            p2 = update_predicted_outputs(p2, z2, hidden_layer_learn)
+
+
         x = x.reshape(1, 2)
         y = y.reshape(1, 2)
         z1, z2, z3 = forward_pass(x)
