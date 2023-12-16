@@ -176,18 +176,31 @@ plt.savefig('loss_trad.pdf')
 
 # Plot the neural networks predictions
 predictions = []
-for x, y in zip(train_data.T, labels.T):
+for x in train_data.T:
     x = x.reshape(1, 2)
-    y = y.reshape(1, 2)
-    z1, z2, z3 = forward_pass(x)
+    _, _, z3 = forward_pass(x)
     predictions.append(z3)
+predictions = np.array(predictions).squeeze()
 
-#Plot the predictions
+# Plot the original data and the predictions
 plt.figure(figsize=(10, 5))
-plt.plot(np.array(predictions)[:,:,0], label='Prey')
-plt.plot(np.array(predictions)[:,:,1], label='Predator')
+
+# Plot original data
+plt.plot(labels.T[:, 0], label='Actual Prey', linestyle='--')
+plt.plot(labels.T[:, 1], label='Actual Predator', linestyle='--')
+
+# Plot predictions with a dashed line
+plt.plot(predictions[:, 0], label='Predicted Prey', linestyle='-')
+plt.plot(predictions[:, 1], label='Predicted Predator', linestyle='-')
+
+# Adding labels and title
 plt.xlabel('Time')
 plt.ylabel('Population')
-plt.title('Predictions')
+plt.title(f'Traditional Neural Network Predictions vs Actual Data')
+
+# Show the legend
 plt.legend()
-plt.savefig('predictions_trad.pdf')
+
+# Save the plot
+plt.savefig(f'./predictions_trad.pdf')
+plt.close()

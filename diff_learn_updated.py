@@ -180,22 +180,35 @@ for epoch in range(epochs):
     # Optionally, print loss for the epoch
     print(f"Epoch: {epoch+1}, Loss: {np.mean(losses[-len(train_data.T):])}")
     # Plot the neural networks predictions
+    # Convert predictions to a numpy array for easier indexing
     predictions = []
-    for x, y in zip(train_data.T, labels.T):
+    for x in train_data.T:
         x = x.reshape(1, 2)
-        y = y.reshape(1, 2)
-        z1, z2, z3 = forward_pass(x)
+        _, _, z3 = forward_pass(x)
         predictions.append(z3)
+    predictions = np.array(predictions).squeeze()
 
-    #Plot the predictions
+    # Plot the original data and the predictions
     plt.figure(figsize=(10, 5))
-    plt.plot(np.array(predictions)[:,:,0], label='Prey')
-    plt.plot(np.array(predictions)[:,:,1], label='Predator')
+
+    # Plot original data
+    plt.plot(labels.T[:, 0], label='Actual Prey', linestyle='--')
+    plt.plot(labels.T[:, 1], label='Actual Predator', linestyle='--')
+
+    # Plot predictions with a dashed line
+    plt.plot(predictions[:, 0], label='Predicted Prey', linestyle='-')
+    plt.plot(predictions[:, 1], label='Predicted Predator', linestyle='-')
+
+    # Adding labels and title
     plt.xlabel('Time')
     plt.ylabel('Population')
-    plt.title('Predictions')
+    plt.title(f'Diff Learn Predictions vs Actual Data for Epoch {epoch+1}')
+
+    # Show the legend
     plt.legend()
-    plt.savefig(f'./output2/predictions_{epoch+1}.pdf')
+
+    # Save the plot
+    plt.savefig(f'./output2/prediction_{epoch+1}.pdf')
     plt.close()
 
     #Decrease learning rate
@@ -215,23 +228,37 @@ plt.title('MSE Loss Over Epochs')
 plt.legend()
 plt.savefig('./output2/loss.pdf')
 
-# Plot the neural networks predictions
+# Calculate predictions
 predictions = []
-for x, y in zip(train_data.T, labels.T):
+for x in train_data.T:
     x = x.reshape(1, 2)
-    y = y.reshape(1, 2)
-    z1, z2, z3 = forward_pass(x)
+    _, _, z3 = forward_pass(x)
     predictions.append(z3)
 
-#Plot the predictions
+# Convert predictions to a numpy array for easier indexing
+predictions = np.array(predictions).squeeze()
+
+# Plot the original data and the predictions
 plt.figure(figsize=(10, 5))
-plt.plot(np.array(predictions)[:,:,0], label='Prey')
-plt.plot(np.array(predictions)[:,:,1], label='Predator')
+
+# Plot original data
+plt.plot(labels.T[:, 0], label='Actual Prey', linestyle='--')
+plt.plot(labels.T[:, 1], label='Actual Predator', linestyle='--')
+
+# Plot predictions with a dashed line
+plt.plot(predictions[:, 0], label='Predicted Prey', linestyle='-')
+plt.plot(predictions[:, 1], label='Predicted Predator', linestyle='-')
+
+# Adding labels and title
 plt.xlabel('Time')
 plt.ylabel('Population')
-plt.title('Predictions')
-plt.legend()
-plt.savefig('./output2/final_predictions.pdf')
+plt.title('Diff Learn Predictions vs Actual Data')
 
+# Show the legend
+plt.legend()
+
+# Save the plot
+plt.savefig('./output2/final_predictions.pdf')
+#plt.show()  # To display the plot inline if using a notebook
 
 
