@@ -64,11 +64,14 @@ def solve_odeint_step(X, dt, alpha, beta, gamma, delta, n_steps):
 def update_predicted_outputs(x,y_hat,eta):
     global w1, w2, w3, b1, b2, b3, p1, p2
     z1 = np.dot(x, w1) + b1
-    a1 = relu(z1)
+    a1 = relu(p1)
     z2 = np.dot(a1, w2) + b2
-    a2 = relu(z2)
+    a2 = relu(p2)
     z3 = np.dot(a2, w3) + b3
     y_hat = relu(z3)  # Final prediction
+
+    layer1 = relu(p1)
+    layer2 = relu(p2)
 
     # Gradients for z3 (last layer before the output)
     dJ_dz3 = (y_hat - y) * drelu(z3)
@@ -76,48 +79,17 @@ def update_predicted_outputs(x,y_hat,eta):
     # Gradients for z2 (second hidden layer)
     # We need to consider that z2 and a2 are row vectors now, so we will adjust dimensions accordingly
     dJ_da2 = np.dot(dJ_dz3, w3.T)  # Adjusted to row vector
-    dJ_dz2 = dJ_da2 * drelu(z2)
+    dJ_dz2 = dJ_da2 * drelu(a2)
 
     # Calculate the gradient of the loss with respect to z1 (output of the first hidden layer before activation)
     dJ_da1 = np.dot(dJ_dz2, w2.T)  # Gradient with respect to the output of the first hidden layer after activation
-    dJ_dz1 = dJ_da1 * drelu(z1)  # Gradient with respect to z1 before activation
+    dJ_dz1 = dJ_da1 * drelu(a1)  # Gradient with respect to z1 before activation
 
     # Update rules for p1 and p2
     p1_updated = p1 - eta * dJ_dz1
     p2_updated = p2 - eta * dJ_dz2
-    """# Forward pass through the activation functions
-    f1_W1x = relu(np.dot(w1, x) + b1)
-    f2_p1 = relu(p1)
-
-    # Derivative of loss function with respect to z2 and z3
-    # For z2
-    dJ_dp1 = (p1 - np.dot(w2, f1_W1x)) * drelu(p1)
-    # We also need to consider the impact of z2 on z3 through W3 and the final output
-    partial_f2_z2 = drelu(f2_p1)
-    dJ_dp1 += np.dot(w3.T, (p2 - np.dot(w3, f2_p1) * partial_f2_z2)) * partial_f2_z2
-
-    # For z3
-    partial_p2 = drelu(p2)
-    dJ_dp2 = (z3 - y_hat) * partial_p2
-
-    # Update rules
-    p1_updated = z2 - eta * dJ_dp1
-    p2_updated = z3 - eta * dJ_dp2"""
-
 
     return p1_updated, p2_updated
-
-    """# Update rules for the output layer (traditional approach)
-    loss_output = z3 - y_true
-    grad_p2 = np.dot(w3, loss_output.T) * drelu(p2)
-    p2 -= eta * np.sum(grad_p2) * (p2 - z2)
-
-    # Update rules for the second hidden layer
-    loss_hidden_2 = z2 - p2
-    grad_p1 = np.dot(w2, loss_hidden_2.T) * drelu(p1)
-    p1 -= eta * np.sum(grad_p1) * (p1 - z1)
-
-    return p1,p2"""
 
 def update_weights(X, y_true, z1, z2, z3, eta):
     global w1, w2, w3, b1, b2, b3, p1, p2
@@ -155,11 +127,11 @@ def mse_loss(y_pred, y_true):
 
 
 # Training loop parameters
-epochs = 20
+epochs = 100
 dt = 100.0
-learn_rate = 1e-5
+learn_rate = 1e-3
 learn_rate_decay=1.0
-hidden_layer_learn = .0001
+hidden_layer_learn = .001
 
 
 
@@ -187,7 +159,7 @@ plt.legend()
 plt.savefig('./new_update/training_data.pdf')
 
 
-subset_size = int(train_data.shape[1])  # Size of the random subset
+subset_size = int(train_data.shape[1]/40) # Size of the random subset
 
 #Train
 for epoch in range(epochs):
@@ -267,7 +239,7 @@ plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.title('MSE Loss Over Epochs')
 plt.legend()
-plt.savefig('./output2/loss.pdf')
+plt.savefig('./new_update/loss.pdf')
 
 # Calculate predictions
 predictions = []
