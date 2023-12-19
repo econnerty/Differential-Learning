@@ -120,10 +120,10 @@ def update_weights(X, y_true, z1, z2, z3, eta):
 def min_max_normalize(data):
     return (data - data.min()) / (data.max() - data.min())
 
-def mse_loss(y_pred, y_true):
-    # Calculate MSE separately for each output and then average
-    mse_per_output = np.mean((y_pred - y_true) ** 2, axis=0)
-    return np.sum(mse_per_output)
+def rmse_loss(y_pred, y_true):
+    mse = np.mean((y_pred - y_true) ** 2)
+    rmse = np.sqrt(mse)
+    return rmse
 
 
 # Training loop parameters
@@ -187,7 +187,7 @@ for epoch in range(epochs):
         update_weights(x, y, z1, z2, z3, learn_rate)
 
         # Compute and store the loss
-        loss = mse_loss(z3, y)
+        loss = rmse_loss(z3, y)
         losses.append(loss)
 
     # Optionally, print loss for the epoch
